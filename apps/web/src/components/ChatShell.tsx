@@ -9,7 +9,7 @@ export function ChatShell() {
   const [text, setText] = useState('');
   const api = useMemo(() => `${backendUrl}/api/v1/chat/stream`, [backendUrl]);
 
-  const { messages, append, status } = useChat({
+  const { messages, append, status, error, reload } = useChat({
     api,
     headers: { 'Content-Type': 'application/json' }
   });
@@ -26,6 +26,15 @@ export function ChatShell() {
         </header>
 
         <MessageList messages={messages} isStreaming={isStreaming} />
+
+        {error ? (
+          <p className="chat-error" role="alert">
+            Unable to fetch an assistant response. Please verify that the backend is reachable, then try again.
+            <button type="button" className="chat-error-retry" onClick={() => reload()}>
+              Retry
+            </button>
+          </p>
+        ) : null}
 
         <form
           className="chat-form"
