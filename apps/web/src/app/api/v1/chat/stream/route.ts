@@ -3,6 +3,14 @@ import { NextRequest } from 'next/server';
 const DEFAULT_BACKEND_URL = 'http://localhost:8080';
 const IPV4_LOCALHOST_BACKEND_URL = 'http://127.0.0.1:8080';
 
+function buildBackendCandidates(configuredBackendUrl?: string) {
+  const candidates = [configuredBackendUrl, DEFAULT_BACKEND_URL, IPV4_LOCALHOST_BACKEND_URL]
+    .map((candidate) => candidate?.trim())
+    .filter((candidate): candidate is string => Boolean(candidate));
+
+  return [...new Set(candidates)];
+}
+
 function normalizeToken(rawToken?: string) {
   if (!rawToken) {
     return '';
@@ -35,9 +43,7 @@ export async function POST(req: NextRequest) {
     headers.set('Authorization', incomingAuth);
   }
 
-  const backendCandidates = configuredBackendUrl
-    ? [configuredBackendUrl]
-    : [DEFAULT_BACKEND_URL, IPV4_LOCALHOST_BACKEND_URL];
+  const backendCandidates = buildBackendCandidates(configuredBackendUrl);
 
   const payload = await req.text();
   let lastError: unknown;
@@ -65,12 +71,15 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  return new Response(null, {
-    status: 503,
-    headers: {
-      'Content-Type': 'application/json; charset=utf-8',
-      'Cache-Control': 'no-cache',
-      'x-proxy-error': lastError instanceof Error ? lastError.message : 'Upstream chat backend unreachable'
+  return new Response(
+    JSON.stringify({ error: 'Upstream chat backend unreachable' }),
+    {
+      status: 503,
+      headers: {
+        'Content-Type': 'application/json; charset=utf-8',
+        'Cache-Control': 'no-cache',
+        'x-proxy-error': lastError instanceof Error ? lastError.message : 'Upstream chat backend unreachable'
+      }
     }
-  });
+  );
 }
