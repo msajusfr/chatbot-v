@@ -62,6 +62,31 @@ class ChatRequestDeserializationTest {
     }
 
     @Test
+    void extractsUserMessageFromVercelAiSdkPartsPayload() throws Exception {
+        ObjectMapper mapper = new ObjectMapper();
+        String payload = """
+                {
+                  "id": "chat-4",
+                  "messages": [
+                    {
+                      "role": "assistant",
+                      "parts": [{ "type": "text", "text": "How can I help?" }]
+                    },
+                    {
+                      "role": "user",
+                      "parts": [{ "type": "text", "text": "give me a list of values" }]
+                    }
+                  ]
+                }
+                """;
+
+        ChatRequest request = mapper.readValue(payload, ChatRequest.class);
+
+        assertEquals("chat-4", request.chatId());
+        assertEquals("give me a list of values", request.message());
+    }
+
+    @Test
     void keepsMessageNullWhenPayloadContainsNoContent() throws Exception {
         ObjectMapper mapper = new ObjectMapper();
         String payload = """
