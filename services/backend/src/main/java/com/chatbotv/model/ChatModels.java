@@ -1,13 +1,14 @@
 package com.chatbotv.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonAlias;
 
 import java.time.Instant;
 import java.util.List;
 
 public class ChatModels {
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public record ChatRequest(String chatId, String message) {}
+    public record ChatRequest(@JsonAlias("id") String chatId, String message) {}
 
     public record ChatResponse(String chatId, ChatbotVResponse response) {}
 

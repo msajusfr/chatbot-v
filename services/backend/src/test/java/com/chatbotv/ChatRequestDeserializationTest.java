@@ -24,4 +24,20 @@ class ChatRequestDeserializationTest {
         assertEquals("chat-1", request.chatId());
         assertEquals("hello", request.message());
     }
+
+    @Test
+    void mapsIdFieldToChatIdForClientCompatibility() throws Exception {
+        ObjectMapper mapper = new ObjectMapper();
+        String payload = """
+                {
+                  "id": "chat-from-client",
+                  "message": "hello"
+                }
+                """;
+
+        ChatRequest request = mapper.readValue(payload, ChatRequest.class);
+
+        assertEquals("chat-from-client", request.chatId());
+        assertEquals("hello", request.message());
+    }
 }
