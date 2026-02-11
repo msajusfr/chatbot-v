@@ -137,6 +137,28 @@ textarea {
   background: #fff;
 }
 
+.chat-error {
+  margin: 0;
+  padding: 0.75rem 1.25rem;
+  border-top: 1px solid #f2c5c5;
+  background: #fff4f4;
+  color: #8f2222;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  font-size: 0.92rem;
+}
+
+.chat-error-retry {
+  border: 1px solid #dca0a0;
+  border-radius: 0.55rem;
+  background: #fff;
+  color: #8f2222;
+  font-weight: 600;
+  padding: 0.35rem 0.7rem;
+}
+
 .chat-form input {
   width: 100%;
   border: 1px solid #c9d5ec;
