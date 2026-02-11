@@ -5,14 +5,14 @@ import { useChat } from 'ai/react';
 import { MessageList } from './MessageList';
 
 export function ChatShell() {
-  const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL ?? process.env.BACKEND_URL ?? 'http://localhost:8080';
+  const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL ?? 'http://localhost:8080';
   const [text, setText] = useState('');
-  const transport = useMemo(() => ({
-    api: `${backendUrl}/api/v1/chat/stream`,
-    headers: { 'Content-Type': 'application/json' }
-  }), [backendUrl]);
+  const api = useMemo(() => `${backendUrl}/api/v1/chat/stream`, [backendUrl]);
 
-  const { messages, sendMessage, status } = useChat({ transport });
+  const { messages, append, status } = useChat({
+    api,
+    headers: { 'Content-Type': 'application/json' }
+  });
 
   return (
     <main>
@@ -22,7 +22,7 @@ export function ChatShell() {
         onSubmit={(e) => {
           e.preventDefault();
           if (!text.trim()) return;
-          sendMessage({ text });
+          append({ role: 'user', content: text });
           setText('');
         }}
       >
