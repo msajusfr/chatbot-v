@@ -44,7 +44,7 @@ public class LangChain4jChatAssistantService implements ChatAssistantService {
                     \"title\": \"string\",
                     \"sql\": \"string\",
                     \"result\": {\"columns\": [\"string\"], \"rows\": [[\"any\"]], \"isFictional\": true, \"notes\": \"string\"},
-                    \"presentationHints\": {\"primary\": \"bar|scatter|line|kpi|table\", \"secondary\": \"...\", \"formatting\": [\"...\"]}
+                    \"presentationHints\": {\"primary\": \"bar|scatter|line|pie|kpi|table\", \"secondary\": \"...\", \"formatting\": [\"...\"]}
                   }],
                   \"followUps\": [\"string\"],
                   \"meta\": {\"modelName\": \"%s\", \"temperature\": %s, \"generatedAt\": \"ISO-8601\"}
@@ -82,14 +82,23 @@ public class LangChain4jChatAssistantService implements ChatAssistantService {
 
     private ChatbotVResponse fake(String userMessage) {
         String lower = userMessage == null ? "" : userMessage.toLowerCase();
-        String primary = lower.contains("pib") || lower.contains("population") ? "scatter" : "bar";
+        boolean asksPie = lower.contains("pie") || lower.contains("camembert");
+        boolean asksScatter = lower.contains("pib") || lower.contains("population");
+        String primary = asksPie ? "pie" : (asksScatter ? "scatter" : "bar");
+        String sql = asksPie
+                ? "SELECT category, value FROM chart_demo WHERE scenario = 'pie' ORDER BY value DESC;"
+                : "SELECT dimension, metric FROM analytics_demo ORDER BY metric DESC LIMIT 5;";
+        SqlResult result = asksPie
+                ? new SqlResult(List.of("category", "value"), List.of(List.of("A", 10), List.of("B", 20), List.of("C", 30)), true,
+                "Résultat SQL fictif optimisé pour rendu graphique frontend")
+                : new SqlResult(List.of("dimension", "metric"), List.of(List.of("A", 1200), List.of("B", 980), List.of("C", 870)), true,
+                "Dataset in-memory de démonstration");
         Artifact artifact = new Artifact(
                 "sql.query",
-                "Résultats fictifs",
-                "SELECT dimension, metric FROM analytics_demo ORDER BY metric DESC LIMIT 5;",
-                new SqlResult(List.of("dimension", "metric"), List.of(List.of("A", 1200), List.of("B", 980), List.of("C", 870)), true,
-                        "Dataset in-memory de démonstration"),
-                new PresentationHints(primary, "table", List.of("compact", "currency"))
+                asksPie ? "Répartition fictive par catégorie" : "Résultats fictifs",
+                sql,
+                result,
+                new PresentationHints(primary, "table", asksPie ? List.of("compact", "integer") : List.of("compact", "currency"))
         );
         return new ChatbotVResponse(
                 "Voici une réponse basée sur des données fictives pour illustrer l'analyse SQL.\n\n> ⚠️ Données fictives uniquement.",
