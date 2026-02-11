@@ -85,14 +85,14 @@ public class ChatbotVApplication {
             exchange.sendResponseHeaders(200, 0);
 
             SseWriter writer = new SseWriter(exchange.getResponseBody(), MAPPER);
-            writer.event("start", SseWriter.map("chatId", chatId));
+            writer.event("start", SseWriter.map("messageId", chatId));
             writer.event("text-start", SseWriter.map("id", "assistant-text-1"));
             writer.event("text-delta", SseWriter.map("id", "assistant-text-1", "delta", response.answerMarkdown()));
             writer.event("text-end", SseWriter.map("id", "assistant-text-1"));
             if (!response.artifacts().isEmpty()) {
                 writer.event("data-sql", SseWriter.map("type", "data-sql", "data", response.artifacts().get(0)));
             }
-            writer.event("finish", SseWriter.map("followUps", response.followUps(), "meta", response.meta()));
+            writer.event("finish", SseWriter.map("followUps", response.followUps(), "meta", response.meta(), "finishReason", "stop"));
             writer.done();
             exchange.close();
         }, allowedOrigin, token, rateLimiter));

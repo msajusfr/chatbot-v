@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class SseWriter {
@@ -17,8 +18,18 @@ public class SseWriter {
     }
 
     public synchronized void event(String event, Object payload) throws IOException {
-        String json = mapper.writeValueAsString(payload);
-        String chunk = "event: " + event + "\n" + "data: " + json + "\n\n";
+        LinkedHashMap<String, Object> eventPayload = new LinkedHashMap<>();
+        eventPayload.put("type", event);
+        if (payload instanceof Map<?, ?> payloadMap) {
+            for (Map.Entry<?, ?> entry : payloadMap.entrySet()) {
+                eventPayload.put(String.valueOf(entry.getKey()), entry.getValue());
+            }
+        } else if (payload != null) {
+            eventPayload.put("data", payload);
+        }
+
+        String json = mapper.writeValueAsString(eventPayload);
+        String chunk = "data: " + json + "\n\n";
         outputStream.write(chunk.getBytes(StandardCharsets.UTF_8));
         outputStream.flush();
     }
