@@ -4,7 +4,11 @@ const DEFAULT_BACKEND_URL = 'http://localhost:8080';
 
 export async function POST(req: NextRequest) {
   const backendUrl = process.env.BACKEND_URL ?? process.env.NEXT_PUBLIC_BACKEND_URL ?? DEFAULT_BACKEND_URL;
-  const token = process.env.CHATBOTV_INTERNAL_TOKEN;
+  const token =
+    process.env.CHATBOTV_INTERNAL_TOKEN ??
+    process.env.BACKEND_INTERNAL_TOKEN ??
+    process.env.INTERNAL_TOKEN;
+  const incomingAuth = req.headers.get('Authorization');
 
   const headers = new Headers({
     'Content-Type': 'application/json'
@@ -12,6 +16,8 @@ export async function POST(req: NextRequest) {
 
   if (token && token.trim().length > 0) {
     headers.set('Authorization', `Bearer ${token}`);
+  } else if (incomingAuth) {
+    headers.set('Authorization', incomingAuth);
   }
 
   const upstream = await fetch(`${backendUrl}/api/v1/chat/stream`, {
