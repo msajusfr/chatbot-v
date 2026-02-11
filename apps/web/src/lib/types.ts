@@ -9,8 +9,8 @@ export type SqlArtifact = {
     notes?: string;
   };
   presentationHints: {
-    primary: 'bar' | 'scatter' | 'line' | 'kpi' | 'table';
-    secondary?: 'bar' | 'scatter' | 'line' | 'kpi' | 'table';
+    primary: 'bar' | 'scatter' | 'line' | 'pie' | 'kpi' | 'table';
+    secondary?: 'bar' | 'scatter' | 'line' | 'pie' | 'kpi' | 'table';
     formatting?: string[];
   };
 };
