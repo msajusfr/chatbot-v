@@ -42,6 +42,18 @@ public class ChatbotVApplication {
         TokenBucketRateLimiter rateLimiter = new TokenBucketRateLimiter(20, 5);
 
         HttpServer server = HttpServer.create(new InetSocketAddress(port), 0);
+        server.createContext("/", withCommon(exchange -> {
+            if (!"GET".equalsIgnoreCase(exchange.getRequestMethod())) {
+                HttpUtils.status(exchange, 405, "Method not allowed");
+                return;
+            }
+            HttpUtils.json(exchange, MAPPER, 200, Map.of(
+                    "name", "chatbot-v-backend",
+                    "status", "ok",
+                    "health", "/healthz",
+                    "endpoints", List.of("POST /api/v1/chat", "POST /api/v1/chat/stream", "DELETE /api/v1/chats/{chatId}")
+            ));
+        }, allowedOrigin, token, rateLimiter));
         server.createContext("/healthz", withCommon(exchange -> HttpUtils.json(exchange, MAPPER, 200, Map.of("status", "ok")), allowedOrigin, token, rateLimiter));
 
         server.createContext("/api/v1/chat", withCommon(exchange -> {
