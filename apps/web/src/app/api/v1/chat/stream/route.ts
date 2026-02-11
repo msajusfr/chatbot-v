@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server';
 
 const DEFAULT_BACKEND_URL = 'http://localhost:8080';
+const IPV4_LOCALHOST_BACKEND_URL = 'http://127.0.0.1:8080';
 
 function normalizeToken(rawToken?: string) {
   if (!rawToken) {
@@ -16,7 +17,7 @@ function normalizeToken(rawToken?: string) {
 }
 
 export async function POST(req: NextRequest) {
-  const backendUrl = process.env.BACKEND_URL ?? process.env.NEXT_PUBLIC_BACKEND_URL ?? DEFAULT_BACKEND_URL;
+  const configuredBackendUrl = process.env.BACKEND_URL ?? process.env.NEXT_PUBLIC_BACKEND_URL;
   const token = normalizeToken(
     process.env.CHATBOTV_INTERNAL_TOKEN ??
     process.env.BACKEND_INTERNAL_TOKEN ??
@@ -34,20 +35,42 @@ export async function POST(req: NextRequest) {
     headers.set('Authorization', incomingAuth);
   }
 
-  const upstream = await fetch(`${backendUrl}/api/v1/chat/stream`, {
-    method: 'POST',
-    headers,
-    body: await req.text(),
-    cache: 'no-store'
-  });
+  const backendCandidates = configuredBackendUrl
+    ? [configuredBackendUrl]
+    : [DEFAULT_BACKEND_URL, IPV4_LOCALHOST_BACKEND_URL];
 
-  return new Response(upstream.body, {
-    status: upstream.status,
+  const payload = await req.text();
+  let lastError: unknown;
+
+  for (const backendUrl of backendCandidates) {
+    try {
+      const upstream = await fetch(`${backendUrl}/api/v1/chat/stream`, {
+        method: 'POST',
+        headers,
+        body: payload,
+        cache: 'no-store'
+      });
+
+      return new Response(upstream.body, {
+        status: upstream.status,
+        headers: {
+          'Content-Type': upstream.headers.get('Content-Type') ?? 'text/event-stream; charset=utf-8',
+          'Cache-Control': upstream.headers.get('Cache-Control') ?? 'no-cache',
+          Connection: upstream.headers.get('Connection') ?? 'keep-alive',
+          'x-vercel-ai-ui-message-stream': upstream.headers.get('x-vercel-ai-ui-message-stream') ?? 'v1'
+        }
+      });
+    } catch (error) {
+      lastError = error;
+    }
+  }
+
+  return new Response(null, {
+    status: 503,
     headers: {
-      'Content-Type': upstream.headers.get('Content-Type') ?? 'text/event-stream; charset=utf-8',
-      'Cache-Control': upstream.headers.get('Cache-Control') ?? 'no-cache',
-      Connection: upstream.headers.get('Connection') ?? 'keep-alive',
-      'x-vercel-ai-ui-message-stream': upstream.headers.get('x-vercel-ai-ui-message-stream') ?? 'v1'
+      'Content-Type': 'application/json; charset=utf-8',
+      'Cache-Control': 'no-cache',
+      'x-proxy-error': lastError instanceof Error ? lastError.message : 'Upstream chat backend unreachable'
     }
   });
 }
