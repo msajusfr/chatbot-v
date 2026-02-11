@@ -20,8 +20,8 @@ class SseWriterTest {
         writer.done();
 
         String payload = out.toString();
-        assertTrue(payload.contains("event: start"));
-        assertTrue(payload.contains("event: text-delta"));
+        assertTrue(payload.contains("\"type\":\"start\""));
+        assertTrue(payload.contains("\"type\":\"text-delta\""));
         assertTrue(payload.contains("data: [DONE]"));
     }
 }
