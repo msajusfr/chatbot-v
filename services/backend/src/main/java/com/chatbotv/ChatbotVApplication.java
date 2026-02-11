@@ -54,8 +54,8 @@ public class ChatbotVApplication {
                     "health", "/healthz",
                     "endpoints", List.of("POST /api/v1/chat", "POST /api/v1/chat/stream", "DELETE /api/v1/chats/{chatId}")
             ));
-        }, allowedOrigin, token, rateLimiter));
-        server.createContext("/healthz", withCommon(exchange -> HttpUtils.json(exchange, MAPPER, 200, Map.of("status", "ok")), allowedOrigin, token, rateLimiter));
+        }, allowedOrigin, token, rateLimiter, false));
+        server.createContext("/healthz", withCommon(exchange -> HttpUtils.json(exchange, MAPPER, 200, Map.of("status", "ok")), allowedOrigin, token, rateLimiter, false));
 
         server.createContext("/api/v1/chat", withCommon(exchange -> {
             if (!"POST".equalsIgnoreCase(exchange.getRequestMethod())) {
@@ -67,7 +67,7 @@ public class ChatbotVApplication {
             ChatbotVResponse response = assistantService.generate(req.message());
             inMemoryChats.computeIfAbsent(chatId, x -> new java.util.ArrayList<>()).add(response);
             HttpUtils.json(exchange, MAPPER, 200, new ChatResponse(chatId, response));
-        }, allowedOrigin, token, rateLimiter));
+        }, allowedOrigin, token, rateLimiter, true));
 
         server.createContext("/api/v1/chat/stream", withCommon(exchange -> {
             if (!"POST".equalsIgnoreCase(exchange.getRequestMethod())) {
@@ -96,7 +96,7 @@ public class ChatbotVApplication {
             writer.event("finish", SseWriter.map("followUps", response.followUps(), "meta", response.meta(), "finishReason", "stop"));
             writer.done();
             exchange.close();
-        }, allowedOrigin, token, rateLimiter));
+        }, allowedOrigin, token, rateLimiter, true));
 
         server.createContext("/api/v1/chats", withCommon(exchange -> {
             if (!"DELETE".equalsIgnoreCase(exchange.getRequestMethod())) {
@@ -107,14 +107,14 @@ public class ChatbotVApplication {
             String chatId = parts[parts.length - 1];
             inMemoryChats.remove(chatId);
             HttpUtils.json(exchange, MAPPER, 200, Map.of("deleted", chatId));
-        }, allowedOrigin, token, rateLimiter));
+        }, allowedOrigin, token, rateLimiter, true));
 
         server.setExecutor(Executors.newCachedThreadPool());
         server.start();
         System.out.println("chatbot-v backend running on http://localhost:" + port);
     }
 
-    private static HttpHandler withCommon(HttpHandler delegate, String allowedOrigin, String token, TokenBucketRateLimiter rateLimiter) {
+    private static HttpHandler withCommon(HttpHandler delegate, String allowedOrigin, String token, TokenBucketRateLimiter rateLimiter, boolean requiresAuth) {
         return exchange -> {
             try {
                 cors(exchange, allowedOrigin);
@@ -127,7 +127,7 @@ public class ChatbotVApplication {
                     HttpUtils.status(exchange, 429, "Too Many Requests");
                     return;
                 }
-                if (!token.isBlank()) {
+                if (requiresAuth && !token.isBlank()) {
                     String auth = exchange.getRequestHeaders().getFirst("Authorization");
                     String expected = "Bearer " + token;
                     if (auth == null || !auth.equals(expected)) {

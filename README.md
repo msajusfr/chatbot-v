@@ -122,6 +122,7 @@ Le frontend choisit `scatter` puis fallback table.
 ## Sécurité
 
 - Auth optionnelle avec `Authorization: Bearer CHATBOTV_INTERNAL_TOKEN`
+- `GET /` et `GET /healthz` restent accessibles sans token (utile pour vérifier que le backend tourne)
 - Si `CHATBOTV_INTERNAL_TOKEN` absent, mode dev ouvert.
 - Rate limiting token bucket in-memory par IP.
 - CORS allowlist via `FRONTEND_ORIGIN` (origine unique, liste séparée par des virgules, ou `*`; en local, `localhost` et `127.0.0.1` sont acceptés quel que soit le port).
