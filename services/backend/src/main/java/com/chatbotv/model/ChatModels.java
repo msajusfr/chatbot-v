@@ -18,8 +18,7 @@ public class ChatModels {
                 @JsonProperty("message") String message,
                 @JsonProperty("messages") List<ClientMessage> messages
         ) {
-            this.chatId = chatId;
-            this.message = message != null ? message : extractLastUserMessage(messages);
+            this(chatId, message != null ? message : extractLastUserMessage(messages));
         }
 
         private static String extractLastUserMessage(List<ClientMessage> messages) {
