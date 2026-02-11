@@ -61,7 +61,7 @@ npm install
 npm run dev
 ```
 
-Le frontend attend `BACKEND_URL` (par défaut `http://localhost:8080`).
+Le frontend attend `NEXT_PUBLIC_BACKEND_URL` (par défaut `http://localhost:8080`).
 
 ## Tests
 
@@ -85,7 +85,7 @@ mvn -pl services/backend test
 
 1. Importer `apps/web` comme projet.
 2. Ajouter env var:
-   - `BACKEND_URL=https://votre-backend.example.com`
+   - `NEXT_PUBLIC_BACKEND_URL=https://votre-backend.example.com`
 3. Build command: `npm run build`
 4. Output: Next.js standard.
 
@@ -124,7 +124,7 @@ Le frontend choisit `scatter` puis fallback table.
 - Auth optionnelle avec `Authorization: Bearer CHATBOTV_INTERNAL_TOKEN`
 - Si `CHATBOTV_INTERNAL_TOKEN` absent, mode dev ouvert.
 - Rate limiting token bucket in-memory par IP.
-- CORS allowlist via `FRONTEND_ORIGIN`.
+- CORS allowlist via `FRONTEND_ORIGIN` (origine unique, liste séparée par des virgules, ou `*`; en local, `localhost` et `127.0.0.1` sont acceptés quel que soit le port).
 
 ## Docker backend
 

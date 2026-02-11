@@ -2,6 +2,7 @@ package com.chatbotv;
 
 import com.chatbotv.chat.ChatAssistantService;
 import com.chatbotv.chat.LangChain4jChatAssistantService;
+import com.chatbotv.http.CorsPolicy;
 import com.chatbotv.http.HttpUtils;
 import com.chatbotv.model.ChatModels.ChatRequest;
 import com.chatbotv.model.ChatModels.ChatResponse;
@@ -145,7 +146,8 @@ public class ChatbotVApplication {
     }
 
     private static void cors(HttpExchange exchange, String allowedOrigin) {
-        exchange.getResponseHeaders().add("Access-Control-Allow-Origin", allowedOrigin);
+        exchange.getResponseHeaders().add("Access-Control-Allow-Origin", CorsPolicy.resolveAllowedOrigin(exchange, allowedOrigin));
+        exchange.getResponseHeaders().add("Vary", "Origin");
         exchange.getResponseHeaders().add("Access-Control-Allow-Headers", "Authorization, Content-Type");
         exchange.getResponseHeaders().add("Access-Control-Allow-Methods", "GET,POST,DELETE,OPTIONS");
     }
