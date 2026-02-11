@@ -61,7 +61,8 @@ npm install
 npm run dev
 ```
 
-Le frontend attend `NEXT_PUBLIC_BACKEND_URL` (par défaut `http://localhost:8080`).
+Le frontend appelle désormais sa route API interne (`/api/v1/chat/stream`) qui proxifie vers le backend. Configurez `BACKEND_URL` (ou `NEXT_PUBLIC_BACKEND_URL` en fallback) pour l'URL backend cible.
+Si `CHATBOTV_INTERNAL_TOKEN` est défini, il est automatiquement ajouté côté serveur Next.js en en-tête `Authorization`.
 
 ## Tests
 

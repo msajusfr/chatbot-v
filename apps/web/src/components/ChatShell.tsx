@@ -5,9 +5,8 @@ import { useChat } from 'ai/react';
 import { MessageList } from './MessageList';
 
 export function ChatShell() {
-  const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL ?? 'http://localhost:8080';
   const [text, setText] = useState('');
-  const api = useMemo(() => `${backendUrl}/api/v1/chat/stream`, [backendUrl]);
+  const api = useMemo(() => '/api/v1/chat/stream', []);
 
   const { messages, append, status, error, reload } = useChat({
     api,
