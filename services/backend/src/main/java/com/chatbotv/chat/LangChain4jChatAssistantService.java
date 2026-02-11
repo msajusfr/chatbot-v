@@ -7,7 +7,6 @@ import com.chatbotv.model.ChatModels.PresentationHints;
 import com.chatbotv.model.ChatModels.SqlResult;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.langchain4j.model.openai.OpenAiChatModel;
-import dev.langchain4j.model.output.Response;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -55,8 +54,7 @@ public class LangChain4jChatAssistantService implements ChatAssistantService {
         String prompt = schemaPrompt + "\nQuestion utilisateur: " + userMessage;
         Exception parseError = null;
         for (int i = 0; i < 3; i++) {
-            Response<dev.langchain4j.data.message.AiMessage> response = model.generate(prompt);
-            String text = response.content().text();
+            String text = model.chat(prompt);
             try {
                 ChatbotVResponse parsed = mapper.readValue(text, ChatbotVResponse.class);
                 return enforce(parsed);
