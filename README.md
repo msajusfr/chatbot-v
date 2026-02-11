@@ -32,6 +32,15 @@ cp .env.example .env
 
 ### Backend
 
+Option 1 (depuis la racine, recommandé pour un monorepo Maven):
+
+```bash
+mvn -pl services/backend package
+java -jar services/backend/target/chatbot-v-backend-1.0.0.jar
+```
+
+Option 2 (dans le module backend):
+
 ```bash
 cd services/backend
 mvn package
@@ -67,8 +76,7 @@ npm run test:e2e
 ### Back
 
 ```bash
-cd services/backend
-mvn test
+mvn -pl services/backend test
 ```
 
 ## Déploiement

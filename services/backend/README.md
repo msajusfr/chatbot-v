@@ -15,6 +15,11 @@ Backend Java 17 sans Spring, basé sur `HttpServer` + Jackson + LangChain4j.
 ## Build + run
 
 ```bash
+# depuis la racine du repo
+mvn -pl services/backend package
+java -jar services/backend/target/chatbot-v-backend-1.0.0.jar
+
+# ou depuis ce dossier
 mvn package
 java -jar target/chatbot-v-backend-1.0.0.jar
 ```
@@ -22,5 +27,9 @@ java -jar target/chatbot-v-backend-1.0.0.jar
 ## Tests
 
 ```bash
+# depuis la racine du repo
+mvn -pl services/backend test
+
+# ou depuis ce dossier
 mvn test
 ```
