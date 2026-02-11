@@ -129,8 +129,7 @@ public class ChatbotVApplication {
                 }
                 if (requiresAuth && !token.isBlank()) {
                     String auth = exchange.getRequestHeaders().getFirst("Authorization");
-                    String expected = "Bearer " + token;
-                    if (auth == null || !auth.equals(expected)) {
+                    if (!isValidAuthHeader(auth, token)) {
                         HttpUtils.status(exchange, 401, "Unauthorized");
                         return;
                     }
@@ -158,5 +157,27 @@ public class ChatbotVApplication {
             value = System.getenv(key);
         }
         return value == null || value.isBlank() ? fallback : value;
+    }
+
+    private static boolean isValidAuthHeader(String authHeader, String configuredToken) {
+        String authToken = extractBearerToken(authHeader);
+        String expectedToken = extractBearerToken(configuredToken);
+        return !expectedToken.isBlank() && authToken.equals(expectedToken);
+    }
+
+    private static String extractBearerToken(String rawValue) {
+        if (rawValue == null) {
+            return "";
+        }
+
+        String trimmed = rawValue.trim();
+        if (trimmed.isBlank()) {
+            return "";
+        }
+
+        if (trimmed.regionMatches(true, 0, "Bearer ", 0, 7)) {
+            return trimmed.substring(7).trim();
+        }
+        return trimmed;
     }
 }
