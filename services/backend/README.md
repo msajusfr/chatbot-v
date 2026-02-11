@@ -6,7 +6,7 @@ Backend Java 17 sans Spring, basé sur `HttpServer` + Jackson + LangChain4j.
 
 - `OPENAI_API_KEY`
 - `CHATBOTV_INTERNAL_TOKEN` (optionnel)
-- `FRONTEND_ORIGIN`
+- `FRONTEND_ORIGIN` (origine unique, liste séparée par des virgules, ou `*`)
 - `BACKEND_PORT`
 - `MODEL_NAME`
 - `TEMPERATURE`
