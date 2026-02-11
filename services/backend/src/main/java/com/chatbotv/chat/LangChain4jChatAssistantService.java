@@ -53,18 +53,26 @@ public class LangChain4jChatAssistantService implements ChatAssistantService {
                 """.formatted(modelName, temperature);
 
         String prompt = schemaPrompt + "\nQuestion utilisateur: " + safeUserMessage;
-        Exception parseError = null;
-        for (int i = 0; i < 3; i++) {
-            String text = model.chat(prompt);
-            try {
-                ChatbotVResponse parsed = mapper.readValue(text, ChatbotVResponse.class);
-                return enforce(parsed);
-            } catch (Exception ex) {
-                parseError = ex;
-                prompt = "JSON invalide, corrige strictement. Dernière sortie: " + text;
+        try {
+            Exception parseError = null;
+            for (int i = 0; i < 3; i++) {
+                String text = model.chat(prompt);
+                try {
+                    ChatbotVResponse parsed = mapper.readValue(text, ChatbotVResponse.class);
+                    return enforce(parsed);
+                } catch (Exception ex) {
+                    parseError = ex;
+                    prompt = "JSON invalide, corrige strictement. Dernière sortie: " + text;
+                }
             }
+
+            if (parseError != null) {
+                throw parseError;
+            }
+        } catch (Exception ex) {
+            return fake(safeUserMessage);
         }
-        throw parseError;
+        return fake(safeUserMessage);
     }
 
     private ChatbotVResponse enforce(ChatbotVResponse input) {
