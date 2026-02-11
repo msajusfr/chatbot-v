@@ -32,6 +32,7 @@ public class LangChain4jChatAssistantService implements ChatAssistantService {
 
     @Override
     public ChatbotVResponse generate(String userMessage) throws Exception {
+        String safeUserMessage = userMessage == null ? "" : userMessage;
         if (model == null) return fake(userMessage);
 
         String schemaPrompt = """
@@ -51,7 +52,7 @@ public class LangChain4jChatAssistantService implements ChatAssistantService {
                 isFictional DOIT toujours être true.
                 """.formatted(modelName, temperature);
 
-        String prompt = schemaPrompt + "\nQuestion utilisateur: " + userMessage;
+        String prompt = schemaPrompt + "\nQuestion utilisateur: " + safeUserMessage;
         Exception parseError = null;
         for (int i = 0; i < 3; i++) {
             String text = model.chat(prompt);
@@ -80,7 +81,7 @@ public class LangChain4jChatAssistantService implements ChatAssistantService {
     }
 
     private ChatbotVResponse fake(String userMessage) {
-        String lower = userMessage.toLowerCase();
+        String lower = userMessage == null ? "" : userMessage.toLowerCase();
         String primary = lower.contains("pib") || lower.contains("population") ? "scatter" : "bar";
         Artifact artifact = new Artifact(
                 "sql.query",
