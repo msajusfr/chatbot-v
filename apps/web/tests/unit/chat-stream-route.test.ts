@@ -21,9 +21,9 @@ describe('POST /api/v1/chat/stream proxy route', () => {
       .fn()
       .mockRejectedValueOnce(new Error('connect ECONNREFUSED ::1:8080'))
       .mockResolvedValueOnce(
-        new Response('ok', {
+        new Response(JSON.stringify({ response: { answerMarkdown: 'ok' } }), {
           status: 200,
-          headers: { 'Content-Type': 'text/event-stream; charset=utf-8' }
+          headers: { 'Content-Type': 'application/json; charset=utf-8' }
         })
       );
 
@@ -38,15 +38,16 @@ describe('POST /api/v1/chat/stream proxy route', () => {
 
     expect(fetchMock).toHaveBeenNthCalledWith(
       1,
-      'http://localhost:8080/api/v1/chat/stream',
+      'http://localhost:8080/api/v1/chat',
       expect.objectContaining({ method: 'POST' })
     );
     expect(fetchMock).toHaveBeenNthCalledWith(
       2,
-      'http://127.0.0.1:8080/api/v1/chat/stream',
+      'http://127.0.0.1:8080/api/v1/chat',
       expect.objectContaining({ method: 'POST' })
     );
     expect(res.status).toBe(200);
+    await expect(res.text()).resolves.toBe('ok');
   });
 
   it('falls back to localhost defaults when configured backend is unreachable', async () => {
@@ -56,9 +57,9 @@ describe('POST /api/v1/chat/stream proxy route', () => {
       .fn()
       .mockRejectedValueOnce(new Error('connect ECONNREFUSED backend:8080'))
       .mockResolvedValueOnce(
-        new Response('ok', {
+        new Response(JSON.stringify({ response: { answerMarkdown: 'ok' } }), {
           status: 200,
-          headers: { 'Content-Type': 'text/event-stream; charset=utf-8' }
+          headers: { 'Content-Type': 'application/json; charset=utf-8' }
         })
       );
 
@@ -73,15 +74,16 @@ describe('POST /api/v1/chat/stream proxy route', () => {
 
     expect(fetchMock).toHaveBeenNthCalledWith(
       1,
-      'http://backend:8080/api/v1/chat/stream',
+      'http://backend:8080/api/v1/chat',
       expect.objectContaining({ method: 'POST' })
     );
     expect(fetchMock).toHaveBeenNthCalledWith(
       2,
-      'http://localhost:8080/api/v1/chat/stream',
+      'http://localhost:8080/api/v1/chat',
       expect.objectContaining({ method: 'POST' })
     );
     expect(res.status).toBe(200);
+    await expect(res.text()).resolves.toBe('ok');
   });
 
   it('returns 503 when no backend candidate is reachable', async () => {

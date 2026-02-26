@@ -3,6 +3,12 @@ import { NextRequest } from 'next/server';
 const DEFAULT_BACKEND_URL = 'http://localhost:8080';
 const IPV4_LOCALHOST_BACKEND_URL = 'http://127.0.0.1:8080';
 
+type BackendChatResponse = {
+  response?: {
+    answerMarkdown?: string;
+  };
+};
+
 function buildBackendCandidates(configuredBackendUrl?: string) {
   const candidates = [configuredBackendUrl, DEFAULT_BACKEND_URL, IPV4_LOCALHOST_BACKEND_URL]
     .map((candidate) => candidate?.trim())
@@ -50,20 +56,31 @@ export async function POST(req: NextRequest) {
 
   for (const backendUrl of backendCandidates) {
     try {
-      const upstream = await fetch(`${backendUrl}/api/v1/chat/stream`, {
+      const upstream = await fetch(`${backendUrl}/api/v1/chat`, {
         method: 'POST',
         headers,
         body: payload,
         cache: 'no-store'
       });
 
-      return new Response(upstream.body, {
-        status: upstream.status,
+      if (!upstream.ok) {
+        return new Response(await upstream.text(), {
+          status: upstream.status,
+          headers: {
+            'Content-Type': 'application/json; charset=utf-8',
+            'Cache-Control': 'no-cache'
+          }
+        });
+      }
+
+      const response = (await upstream.json()) as BackendChatResponse;
+      const answer = response.response?.answerMarkdown ?? '';
+
+      return new Response(answer, {
+        status: 200,
         headers: {
-          'Content-Type': upstream.headers.get('Content-Type') ?? 'text/event-stream; charset=utf-8',
-          'Cache-Control': upstream.headers.get('Cache-Control') ?? 'no-cache',
-          Connection: upstream.headers.get('Connection') ?? 'keep-alive',
-          'x-vercel-ai-ui-message-stream': upstream.headers.get('x-vercel-ai-ui-message-stream') ?? 'v1'
+          'Content-Type': 'text/plain; charset=utf-8',
+          'Cache-Control': 'no-cache'
         }
       });
     } catch (error) {

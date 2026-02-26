@@ -35,7 +35,9 @@ public class SseWriter {
     }
 
     public synchronized void done() throws IOException {
-        outputStream.write("data: [DONE]\n\n".getBytes(StandardCharsets.UTF_8));
+        // UI message streams are terminated by closing the SSE connection after a
+        // "finish" event. Sending OpenAI-style "[DONE]" chunks can break clients
+        // expecting JSON payloads for every SSE data line.
         outputStream.flush();
     }
 
