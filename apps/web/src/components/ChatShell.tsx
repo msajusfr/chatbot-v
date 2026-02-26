@@ -10,6 +10,7 @@ export function ChatShell() {
 
   const { messages, append, status, error, reload } = useChat({
     api,
+    streamProtocol: 'text',
     headers: { 'Content-Type': 'application/json' }
   });
 
