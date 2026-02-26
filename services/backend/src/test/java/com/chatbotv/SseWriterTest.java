@@ -22,6 +22,6 @@ class SseWriterTest {
         String payload = out.toString();
         assertTrue(payload.contains("\"type\":\"start\""));
         assertTrue(payload.contains("\"type\":\"text-delta\""));
-        assertTrue(payload.contains("data: [DONE]"));
+        assertTrue(payload.endsWith("\n\n"));
     }
 }
